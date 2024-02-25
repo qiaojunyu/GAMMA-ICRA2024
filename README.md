@@ -1,7 +1,7 @@
 # GAMMA: Generalizable Articulation Modeling and Manipulation for Articulated Objects
 
 ## Overview 
-This repository contains the implementation of the paper *[GAMMA: Generalizable Articulation Modeling and Manipulation for Articulated Objects](https://arxiv.org/abs/2309.16264)*
+This repository contains the implementation of the paper *[GAMMA: Generalizable Articulation Modeling and Manipulation for Articulated Objects]([https://arxiv.org/abs/2309.16264](https://sites.google.com/view/gamma-articulation))*
 <p align="center"><img src="fig/GAMMA.png" width="100%"></p>
 
 
