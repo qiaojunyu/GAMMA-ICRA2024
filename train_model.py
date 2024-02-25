@@ -73,10 +73,14 @@ def main(args, writer):
         print("load model from path:", args.model_path)
         model.load_state_dict(torch.load(args.model_path))
         object_cats = {}
+        sem_accu = []
+        pixel_accu = []
         for sample in tqdm(test_load):
             model.eval()
             with torch.no_grad():
                 object_result = model.evaluate(sample, ignore_label=args.ignore_label)
+                sem_accu.append(object_result["sem_accu"])
+                pixel_accu.append(object_result["pixel_accu"])
                 object_cat_id = object_result["object_cat_id"]
                 object_cat = object_cat_id.split("_")[0]
                 if object_cat not in object_cats:
@@ -94,7 +98,8 @@ def main(args, writer):
 
                 for joint_type_accu in object_result["joint_type_accu"]:
                     object_cats[object_cat]["joint_type_accu"] += object_result["joint_type_accu"][joint_type_accu]
-
+        print("sem_accu:", np.mean(sem_accu))
+        print("pixel_accu:", np.mean(pixel_accu))
         for object_cat in object_cats:
             print("*" * 100)
             print("object_cat: ", object_cat)
@@ -106,7 +111,7 @@ def main(args, writer):
             ious = np.array(ious)
             print("mean ious:", np.mean(ious))
             print("part ious 50 :{} ".format((ious > 0.5).sum() / ious.shape[0]))
-            print("part ious 75 :{} ".format((ious > 0.5).sum() / ious.shape[0]))
+            print("part ious 75 :{} ".format((ious > 0.75).sum() / ious.shape[0]))
             joint_type_acc = object_cats[object_cat]["joint_type_accu"]
             joint_type_acc = np.array(joint_type_acc)
             print("joint_type_acc :{} ".format(np.mean(joint_type_acc)))
@@ -156,17 +161,15 @@ def main(args, writer):
             pixel_accu = 0
             epoch_step = 0
             for sample in tqdm(test_load):
-                if epoch > args.offset_start:
-                    losses, result_dict = model.get_loss(sample, sem_only=False, ignore_label=args.ignore_label)
-                else:
-                    losses, result_dict = model.get_loss(sample, sem_only=True, ignore_label=args.ignore_label)
-                optimizer.zero_grad()
-                losses["total_loss"].backward()
-                optimizer.step()
-                epoch_loss += losses["total_loss"].item()
-                sem_acc += result_dict["sem_all_accu"].item()
-                pixel_accu += result_dict["pixel_accu"].item()
-                epoch_step += 1
+                with torch.no_grad():
+                    if epoch > args.offset_start:
+                        losses, result_dict = model.get_loss(sample, sem_only=False, ignore_label=args.ignore_label)
+                    else:
+                        losses, result_dict = model.get_loss(sample, sem_only=True, ignore_label=args.ignore_label)
+                    epoch_loss += losses["total_loss"].item()
+                    sem_acc += result_dict["sem_all_accu"].item()
+                    pixel_accu += result_dict["pixel_accu"].item()
+                    epoch_step += 1
             writer.add_scalar("test/epoch_loss", epoch_loss / epoch_step, epoch)
             writer.add_scalar("test/epoch_sem_accu", sem_acc / epoch_step, epoch)
             writer.add_scalar("test/epoch_pixel_accu", pixel_accu / epoch_step, epoch)
@@ -190,8 +193,9 @@ def main(args, writer):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='bbox object')
     parser.add_argument('--seed', type=int, default=1)
-    parser.add_argument('--train_data_path', type=str, default=["/hdd/gamma/train/"])
-    parser.add_argument('--test_data_path', type=str, default=["/hdd/gamma/test"])
+    parser.add_argument('--train_data_path', type=str, default=["/aidata/qiaojun/train_data/gamma/train/"])
+    # parser.add_argument('--test_data_path', type=str, default=["/aidata/qiaojun/train_data/gamma/val/"])
+    parser.add_argument('--test_data_path', type=str, default=["/hdd/gamma/test/"])
     parser.add_argument('--pointnet_type', type=str, default="pointnet2_msg")
     parser.add_argument('--point_num', type=int, default=10000)
     parser.add_argument('--in_channels', type=int, default=3)
@@ -206,7 +210,7 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, help="learning rate", default=0.001)
     parser.add_argument("--device", type=str, help="cuda or cpu", default="cuda")
     parser.add_argument("--log_dir", type=str, help="log dir", default="./train_process/gamma/pointnet_articulation_model/")
-    parser.add_argument("--model_path", type=str, help="check point", default="./train_process/gamma/pointnet_articulation_model/2024-02-20-10_pointnet2_msg_16/best.pth")
+    parser.add_argument("--model_path", type=str, help="check point", default="./checkpoint/best.pth")
     args = parser.parse_args()
     if args.train:
         args.log_dir = args.log_dir + time.strftime("%Y-%m-%d-%H", time.localtime()) + "_" + args.pointnet_type + "_" + str(args.batch_size)

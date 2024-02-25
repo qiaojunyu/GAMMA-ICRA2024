@@ -13,11 +13,20 @@ This repository contains the implementation of the paper *[GAMMA: Generalizable 
      
 
 ## 1. Install dependencies
-### python 3.6
+### This code has been tested on Ubuntu 20.04 with Cuda 11.1, Python 3.6, and PyTorch 1.8.1.
 ```bash
-conda env create -f conda_env.yml
-pip install -r packages.txt
+conda env create -f environment.yml
 ```
+or
+
+```bash
+conda create -n GAMMA python=3.6
+conda activate GAMMA
+pip install http://download.cs.stanford.edu/orion/where2act/where2act_sapien_wheels/sapien-0.8.0.dev0-cp36-cp36m-manylinux2014_x86_64.whl
+pip install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
+pip install -r requirements.txt
+```
+
 The backbone depends on PointNet++.
 
     git clone --recursive https://github.com/erikwijmans/Pointnet2_PyTorch

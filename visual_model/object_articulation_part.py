@@ -131,7 +131,7 @@ class gamma_model_net(nn.Module):
 
 
     @torch.no_grad()
-    def evaluate(self, data_dict, cluster="joint_and_center", ignore_label=0, eps=0.08, min_samples=50):
+    def evaluate(self, data_dict, cluster="joint_and_center", ignore_label=0, eps=0.1, min_samples=100):
         coords = data_dict["coords"].to(self.device, dtype=torch.float)
         assert coords.shape[0] == 1
         if coords.shape[1] > self.num_point:
@@ -288,7 +288,7 @@ class gamma_model_net(nn.Module):
         return object_result
 
     @torch.no_grad()
-    def online_inference(self, camera_pcd, view_res=False, denoise=True, cluster_eps=0.08, num_point_min=200, joint_type_to_name=False, ignore_label=0):
+    def online_inference(self, camera_pcd, view_res=False, denoise=True, cluster_eps=0.08, num_point_min=100, joint_type_to_name=False, ignore_label=0):
         if denoise:
             camera_pcd = radius_based_denoising_numpy(camera_pcd)
         camera_pcd, voxel_centroids = voxel_sample_points(camera_pcd, point_number=int(self.num_point * 1.25))
@@ -311,7 +311,7 @@ class gamma_model_net(nn.Module):
         for function_mask_id in function_mask_ids:
             if function_mask_id == ignore_label:
                 continue
-            if (pre_function_mask == function_mask_id).sum() < 30:
+            if (pre_function_mask == function_mask_id).sum() < num_point_min:
                 continue
             part_indexs = np.where(pre_function_mask == function_mask_id)[0]
             part_pcd = point_cloud[pre_function_mask == function_mask_id]
