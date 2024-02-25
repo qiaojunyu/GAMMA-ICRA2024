@@ -11,6 +11,7 @@ This repository contains the implementation of the paper *[GAMMA: Generalizable 
     example_data/              # contains example data for the project
     visual_model/              # contains code for the model
      
+## Articulation data and affordance data generation will be opened later.
 
 ## 1. Install dependencies
 ### This code has been tested on Ubuntu 20.04 with Cuda 11.1, Python 3.6, and PyTorch 1.8.1.
