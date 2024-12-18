@@ -5,7 +5,7 @@
 Please follow the instruction in https://github.com/daerduoCarey/where2act/tree/main/code#before-start, download where2act_original_sapien_dataset.zip and unzip here.
 
 ## 2. URDF annotation
-In this paper, our joint types include revolute and parallel-axis; therefore, the selected parts in the code are "door" and "drawer."
+In this paper, our joint types include revolute and prismatic axis; therefore, the selected parts in the code are "door" and "drawer."
 
 ```bash
 python anno_urdf.py --data_type train  --file_path "down URDF file path"
